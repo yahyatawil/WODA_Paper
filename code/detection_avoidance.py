@@ -9,6 +9,14 @@ from edge_impulse_linux.image import ImageImpulseRunner
 from pysabertooth import Sabertooth
 import serial.tools.list_ports as port
 
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+
+
+
+
+
 """
 Settings
 """
@@ -19,6 +27,10 @@ AoI = np.array([[80,210],[240,210],[I_W-saftey_margin,I_W],[saftey_margin,I_W]])
 MARGIN_l = np.array([[0,0],[saftey_margin,0],[saftey_margin,I_W],[0,I_W]]) # left safty margin
 MARGIN_r = np.array([[I_W-saftey_margin,0],[I_W,0],[I_W,I_W],[I_W-saftey_margin,I_W]]) # right safty margin
 
+F_l = 2714 # focal length in pixels 
+Z_depth = 1.5 # feature point in meter
+
+gamma = 270
 """
 Global variables
 """
@@ -27,6 +39,20 @@ out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MJPG') , fps=2.0, f
 prev_frame_time = 0
 new_frame_time = 0
 
+fig, ax = plt.subplots()
+plt.ion()
+plt.show()
+plt.ylim(-20, 20)
+plt.xlabel("Frame", fontsize=10)
+plt.ylabel("velocities (v_y,w_z)", fontsize=10)
+plt.xticks()
+
+v_y = [] # velocity among y-axis
+w_z = [] # rotation arround z-axis
+time_sample = []
+velo_line, = plt.plot(v_y, label='V_y')
+rotat_line, = plt.plot(w_z, label ='W_z')
+sample = 0
 
 """
 Initialize the serial connection with sabertooth
@@ -51,7 +77,7 @@ def initialization():
 """
 Send velocity to motor 1 & 2
 """
-def send_vel(w, saber):
+def send_vel(v,w):
 
     speed = 16
 
@@ -101,13 +127,13 @@ def drawBoundingBoxe(img, x1, y1, x2, y2, label, color):
 
 """
 Draw feature point for obstacle (center)
+return: feature point position
 """
 def draw_fp(img,x,y,w,h):
     fp_x = int(x) + int(w/2) # feature point x-axis
     fp_x = int(fp_x)
     fp_y = int(y) + int(h/2) # feature point y-axis
     fp_y = int(fp_y) 
-    print("({},{},{},{})=({},{})".format(x,y,w,h,fp_x,fp_y))
     sp_x = 0 # safety point x-axis
     sp_y = fp_y # safety point y-axis
 
@@ -120,6 +146,8 @@ def draw_fp(img,x,y,w,h):
     cv2.circle(img, (sp_x,sp_y), radius=5, color=(255, 0, 0), thickness=-1) # draw safty point
     cv2.circle(img, (fp_x,fp_y), radius=5, color=(0, 255, 0), thickness=-1) # draw feature point
     cv2.line(img,(fp_x,fp_y),(sp_x,sp_y),(255,0,0),3) # draw a line between them
+
+    return fp_x,fp_y;
 
 
 """
@@ -166,11 +194,28 @@ signal.signal(signal.SIGINT, sigint_handler)
 def help():
     print('missing <path_to_model.eim> <Camera port ID, only required when more than 1 camera is present>')
 
+def calculate_velocity(u,v):
+    if u > int(I_W/2):
+        u_star = I_W - saftey_margin/2
+    else:
+        u_star = saftey_margin/2 
+    velo = int((u - u_star)/ v)
+    rotat = -1 * gamma * u * (Z_depth/F_l) * (u - u_star)/ v
+    return velo,rotat;
+    
+
+def plot_data():
+    plt.xlim(0, new_frame_time)
+    line.set_ydata()
+
 def main(argv):
 
     global prev_frame_time # used to calculate fps
     global new_frame_time # used to calculate fps
-
+    global sample
+    fx=0
+    fy=0
+    avoid = False
     try:
         opts, args = getopt.getopt(argv, "h", ["--help"])
     except getopt.GetoptError:
@@ -194,6 +239,7 @@ def main(argv):
     print('MODEL: ' + modelfile)
 
     #saber = initialization() # init saber object 
+
 
     with ImageImpulseRunner(modelfile) as runner:
         try:
@@ -232,9 +278,11 @@ def main(argv):
                     AoI_condition = check_in_AoI(bb['x'],bb['y'],bb['width'],bb['height'])
                     if AoI_condition > 0: # box entered the AoI
                         color= (0,255,0)                       
-                        draw_fp(img,bb['x'],bb['y'],bb['width'],bb['height'])
+                        fx,fy = draw_fp(img,bb['x'],bb['y'],bb['width'],bb['height'])
+                        avoid=True
                     else:
                         color = (255,0,0)
+                        avoid = False
                     drawBoundingBoxe(img,bb['x'],bb['y'],bb['x']+bb['width'],bb['y']+bb['height'],'%s (%.2f)'%(bb['label'], bb['value']),color)
                     
                 # Add the AoI to frame
@@ -242,7 +290,7 @@ def main(argv):
                 cv2.fillPoly(layer, pts = [AoI], color =(0,255,0))
                 img = cv2.addWeighted(img, 0.9, layer, 0.1, 0.0)
 
-                # Add the safty margin in yellow to image. 
+                # Add the safety margin in yellow to image. 
                 layer2 = np.zeros(img.shape,dtype=np.uint8)
                 cv2.fillPoly(layer2, pts = [MARGIN_l], color =(0,255,255))
                 cv2.fillPoly(layer2, pts = [MARGIN_r], color =(0,255,255))
@@ -254,7 +302,34 @@ def main(argv):
                 fps = 1/(new_frame_time-prev_frame_time)
                 prev_frame_time = time.time()
                 cv2.putText(img, "fps:{}".format(round(fps,2)), (40, 10), 0, 1e-3 * I_W, (0,255,0), 1)
+
+
+                time_sample.append(sample)
+                velo_line.set_xdata(time_sample)
+                rotat_line.set_xdata(time_sample)
+                plt.xlim(0,sample)
+
+                if avoid is True: # calculate the velocities to avoid the obstacle
+                    v,w = calculate_velocity(fx,fy)
+                    v_y.append(v)
+                    w_z.append(w)
+                    print("({},{})".format(v,w))
+                else: # no obstacles. Straight forward
+                    v = 16
+                    w = 0
+                    v_y.append(v)
+                    w_z.append(w)
+                    print("({},{})".format(v,w))
                 
+                #send_vel(v,w)
+
+                velo_line.set_ydata(v_y)
+                rotat_line.set_ydata(w_z)
+                
+                sample=sample+1
+                plt.draw()
+                plt.pause(0.0001)
+
                 out.write(img)
 
 
@@ -270,3 +345,4 @@ def main(argv):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
+
