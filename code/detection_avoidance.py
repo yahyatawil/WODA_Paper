@@ -14,15 +14,16 @@ Settings
 """
 show_camera = True
 saftey_margin = 30 # margin width in pixels
-AoI = np.array([[80,210],[240,210],[320-saftey_margin,320],[saftey_margin,320]]) # Trapezoid AoI
-MARGIN_l = np.array([[0,0],[saftey_margin,0],[saftey_margin,320],[0,320]]) # left safty margin
-MARGIN_r = np.array([[320-saftey_margin,0],[320,0],[320,320],[320-saftey_margin,320]]) # right safty margin
+I_W = 320 # image width in pixels 
+AoI = np.array([[80,210],[240,210],[I_W-saftey_margin,I_W],[saftey_margin,I_W]]) # Trapezoid AoI
+MARGIN_l = np.array([[0,0],[saftey_margin,0],[saftey_margin,I_W],[0,I_W]]) # left safty margin
+MARGIN_r = np.array([[I_W-saftey_margin,0],[I_W,0],[I_W,I_W],[I_W-saftey_margin,I_W]]) # right safty margin
 
 """
 Global variables
 """
 runner = None
-out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MJPG') , fps=2.0, frameSize=(320, 320))
+out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MJPG') , fps=2.0, frameSize=(I_W, I_W))
 prev_frame_time = 0
 new_frame_time = 0
 
@@ -102,20 +103,21 @@ def drawBoundingBoxe(img, x1, y1, x2, y2, label, color):
 Draw feature point for obstacle (center)
 """
 def draw_fp(img,x,y,w,h):
-    fp_x = int(x) + int(w) # feature point x-axis
-    fp_x = int(fp_x/2)
-    fp_y = int(y) + int(h) # feature point y-axis
-    fp_y = int(fp_y/2) 
-
+    fp_x = int(x) + int(w/2) # feature point x-axis
+    fp_x = int(fp_x)
+    fp_y = int(y) + int(h/2) # feature point y-axis
+    fp_y = int(fp_y) 
+    print("({},{},{},{})=({},{})".format(x,y,w,h,fp_x,fp_y))
     sp_x = 0 # safety point x-axis
     sp_y = fp_y # safety point y-axis
 
-    if fp_x > 320/2: # feature point belongs to the left of image
-        sp_x = int(320-(saftey_margin/2))
-    else: # deature point belongs to the right of image
+    if fp_x > int(I_W/2): # feature point belongs to the right of image
+        sp_x = int(I_W-(saftey_margin/2))
+        
+    else: # deature point belongs to the left of image
         sp_x = int(saftey_margin/2)
 
-    cv2.circle(img, (sp_x,sp_y), radius=5, color=(255, 0, 0), thickness=-1) # draw a safty point
+    cv2.circle(img, (sp_x,sp_y), radius=5, color=(255, 0, 0), thickness=-1) # draw safty point
     cv2.circle(img, (fp_x,fp_y), radius=5, color=(0, 255, 0), thickness=-1) # draw feature point
     cv2.line(img,(fp_x,fp_y),(sp_x,sp_y),(255,0,0),3) # draw a line between them
 
@@ -247,11 +249,11 @@ def main(argv):
                 img = cv2.addWeighted(img, 0.9, layer2, 0.1, 0.0) 
                 
                 # add divider vertical line
-                cv2.line(img,(int(320/2),0),(int(320/2),320),(255,255,255),1) # draw a line between them
+                cv2.line(img,(int(I_W/2),0),(int(I_W/2),I_W),(255,255,255),1) # draw a line between them
 
                 fps = 1/(new_frame_time-prev_frame_time)
                 prev_frame_time = time.time()
-                cv2.putText(img, "fps:{}".format(round(fps,2)), (40, 10), 0, 1e-3 * 320, (0,255,0), 1)
+                cv2.putText(img, "fps:{}".format(round(fps,2)), (40, 10), 0, 1e-3 * I_W, (0,255,0), 1)
                 
                 out.write(img)
 
