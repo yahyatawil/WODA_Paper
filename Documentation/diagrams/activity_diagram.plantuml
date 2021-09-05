@@ -1,0 +1,14 @@
+@startuml
+!theme bluegray
+start
+repeat  :Capture Frame;
+:Detect objects [MobileNetV2_SSD];
+if (<math>in AoI</math>) then (yes)
+    :Assign Feature Point;
+    :Initiate Control Law;
+    :Calculate Velocities;
+    :Control Motors <math>v_x , omega_z </math>;
+else (no)
+    :Control Motors <math>v_{const}</math>;
+endif
+@enduml
