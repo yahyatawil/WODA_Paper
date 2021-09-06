@@ -31,6 +31,16 @@ F_l = 2714 # focal length in pixels
 Z_depth = 1.5 # feature point in meter
 
 gamma = 270
+
+v_scale = 9
+w_scale = 5
+
+v_straight = 6
+
+
+save_video = True 
+
+Plot_diagram = False
 """
 Global variables
 """
@@ -40,12 +50,13 @@ prev_frame_time = 0
 new_frame_time = 0
 
 fig, ax = plt.subplots()
-plt.ion()
-plt.show()
-plt.ylim(-20, 20)
-plt.xlabel("Frame", fontsize=10)
-plt.ylabel("velocities (v_y,w_z)", fontsize=10)
-plt.xticks()
+if Plot_diagram is True:
+    plt.ion()
+    plt.show()
+    plt.ylim(-20, 20)
+    plt.xlabel("Frame", fontsize=10)
+    plt.ylabel("velocities (v_y,w_z)", fontsize=10)
+    plt.xticks()
 
 v_y = [] # velocity among y-axis
 w_z = [] # rotation arround z-axis
@@ -77,23 +88,26 @@ def initialization():
 """
 Send velocity to motor 1 & 2
 """
-def send_vel(v,w):
-
-    speed = 16
-
-    if w < -0.05:
-        print("left")
-        saber.drive(1, speed)
-        saber.drive(2, speed + 5*abs(w))
-    elif w > 0.05:
-        print("right")
-        saber.drive(1, speed + 5*abs(w))
-        saber.drive(2, speed)
-    else:
+def send_vel(v,w,saber):
+    
+    if v>16:
+        v = 16
+   
+    if w > 0:
+        w = w /30
+        print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
+        saber.drive(1, abs(v)*v_scale)
+        saber.drive(2, abs(v)*v_scale + w_scale*abs(w))
+    elif w < 0:
+        w = w /30
+        print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
+        saber.drive(1, abs(v)*v_scale + w_scale*abs(w))
+        saber.drive(2, abs(v)*v_scale)
+    elif w == 0:
         print("straight!")
-        saber.drive(1, speed)
-        saber.drive(2, speed)
-
+        saber.drive(1, v)
+        saber.drive(2, v)
+    
 
 
 """
@@ -199,7 +213,7 @@ def calculate_velocity(u,v):
         u_star = I_W - saftey_margin/2
     else:
         u_star = saftey_margin/2 
-    velo = int((u - u_star)/ v)
+    velo = (u - u_star)/ v
     rotat = -1 * gamma * u * (Z_depth/F_l) * (u - u_star)/ v
     return velo,rotat;
     
@@ -238,7 +252,7 @@ def main(argv):
 
     print('MODEL: ' + modelfile)
 
-    #saber = initialization() # init saber object 
+    saber = initialization() # init saber object 
 
 
     with ImageImpulseRunner(modelfile) as runner:
@@ -268,7 +282,7 @@ def main(argv):
             else:
                 raise Exception("Couldn't initialize selected camera.")
 
-
+            time.sleep(5)
             for res, img in runner.classifier(videoCaptureDeviceId):
                 new_frame_time = time.time()
                 #print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
@@ -284,7 +298,7 @@ def main(argv):
                         color = (255,0,0)
                         avoid = False
                     drawBoundingBoxe(img,bb['x'],bb['y'],bb['x']+bb['width'],bb['y']+bb['height'],'%s (%.2f)'%(bb['label'], bb['value']),color)
-                    
+                   
                 # Add the AoI to frame
                 layer = np.zeros(img.shape,dtype=np.uint8)
                 cv2.fillPoly(layer, pts = [AoI], color =(0,255,0))
@@ -303,40 +317,45 @@ def main(argv):
                 prev_frame_time = time.time()
                 cv2.putText(img, "fps:{}".format(round(fps,2)), (40, 10), 0, 1e-3 * I_W, (0,255,0), 1)
 
-
-                time_sample.append(sample)
-                velo_line.set_xdata(time_sample)
-                rotat_line.set_xdata(time_sample)
-                plt.xlim(0,sample)
+                if Plot_diagram is True:
+                    time_sample.append(sample)
+                    velo_line.set_xdata(time_sample)
+                    rotat_line.set_xdata(time_sample)
+                    plt.xlim(0,sample)
 
                 if avoid is True: # calculate the velocities to avoid the obstacle
                     v,w = calculate_velocity(fx,fy)
-                    v_y.append(v)
-                    w_z.append(w)
-                    print("({},{})".format(v,w))
+                    if Plot_diagram is True:
+                        v_y.append(v)
+                        w_z.append(w)
+                    print("avoid:({},{})".format(round(v,2),round(w,2)))
                 else: # no obstacles. Straight forward
-                    v = 16
+                    v = v_straight
                     w = 0
-                    v_y.append(v)
-                    w_z.append(w)
-                    print("({},{})".format(v,w))
+                    if Plot_diagram is True:
+                        v_y.append(v)
+                        w_z.append(w)
+                    print("straight:({},{})".format(v,w))
                 
-                #send_vel(v,w)
+                send_vel(v,w,saber)
 
-                velo_line.set_ydata(v_y)
-                rotat_line.set_ydata(w_z)
-                
-                sample=sample+1
-                plt.draw()
-                plt.pause(0.0001)
+                if Plot_diagram is True:
+                    velo_line.set_ydata(v_y)
+                    rotat_line.set_ydata(w_z)
+                  
+                    sample=sample+1
+                    plt.draw()
+                    plt.pause(0.0001)
 
-                out.write(img)
+                if save_video is True :
+                    out.write(img)
 
 
                 if (show_camera):
                     cv2.imshow('edgeimpulse', img)
                     if cv2.waitKey(1) == ord('q'):
-                        out.release()
+                        if save_video is True:
+                            out.release()
                         break
 
         finally:
