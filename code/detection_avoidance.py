@@ -14,9 +14,6 @@ import matplotlib.animation as animation
 
 
 
-
-
-
 """
 Settings
 """
@@ -38,9 +35,14 @@ w_scale = 5
 v_straight = 6
 
 
-save_video = True 
+save_video = False 
 
 Plot_diagram = False
+
+motor_en = False
+
+log_en = False 
+
 """
 Global variables
 """
@@ -95,16 +97,19 @@ def send_vel(v,w,saber):
    
     if w > 0:
         w = w /30
-        print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
+        if log_en is True:
+            print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
         saber.drive(1, abs(v)*v_scale)
         saber.drive(2, abs(v)*v_scale + w_scale*abs(w))
     elif w < 0:
         w = w /30
-        print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
+        if log_en is True:
+            print("right:{},{}".format(abs(v)*v_scale,abs(v)*v_scale + w_scale*abs(w)))
         saber.drive(1, abs(v)*v_scale + w_scale*abs(w))
         saber.drive(2, abs(v)*v_scale)
     elif w == 0:
-        print("straight!")
+        if log_en is True:
+            print("straight!")
         saber.drive(1, v)
         saber.drive(2, v)
     
@@ -251,8 +256,10 @@ def main(argv):
     modelfile = os.path.join(dir_path, model)
 
     print('MODEL: ' + modelfile)
-
-    saber = initialization() # init saber object 
+    
+    saber = None
+    if motor_en is True:
+        saber = initialization() # init saber object 
 
 
     with ImageImpulseRunner(modelfile) as runner:
@@ -298,7 +305,7 @@ def main(argv):
                         color = (255,0,0)
                         avoid = False
                     drawBoundingBoxe(img,bb['x'],bb['y'],bb['x']+bb['width'],bb['y']+bb['height'],'%s (%.2f)'%(bb['label'], bb['value']),color)
-                   
+                  
                 # Add the AoI to frame
                 layer = np.zeros(img.shape,dtype=np.uint8)
                 cv2.fillPoly(layer, pts = [AoI], color =(0,255,0))
@@ -312,7 +319,7 @@ def main(argv):
                 
                 # add divider vertical line
                 cv2.line(img,(int(I_W/2),0),(int(I_W/2),I_W),(255,255,255),1) # draw a line between them
-
+                
                 fps = 1/(new_frame_time-prev_frame_time)
                 prev_frame_time = time.time()
                 cv2.putText(img, "fps:{}".format(round(fps,2)), (40, 10), 0, 1e-3 * I_W, (0,255,0), 1)
@@ -328,6 +335,7 @@ def main(argv):
                     if Plot_diagram is True:
                         v_y.append(v)
                         w_z.append(w)
+                if log_en is True:  
                     print("avoid:({},{})".format(round(v,2),round(w,2)))
                 else: # no obstacles. Straight forward
                     v = v_straight
@@ -335,9 +343,11 @@ def main(argv):
                     if Plot_diagram is True:
                         v_y.append(v)
                         w_z.append(w)
+                if log_en is True:
                     print("straight:({},{})".format(v,w))
                 
-                send_vel(v,w,saber)
+                if motor_en is True:
+                    send_vel(v,w,saber)
 
                 if Plot_diagram is True:
                     velo_line.set_ydata(v_y)
