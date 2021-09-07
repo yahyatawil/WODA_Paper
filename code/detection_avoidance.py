@@ -32,17 +32,17 @@ gamma = 270
 v_scale = 9
 w_scale = 5
 
-v_straight = 6
+v_straight = 10
 
-
-save_video = False 
+save_video = True
 
 Plot_diagram = False
 
-motor_en = False
+motor_en = True
 
-log_en = False 
+log_en = True
 
+boxes_en = True
 """
 Global variables
 """
@@ -304,7 +304,8 @@ def main(argv):
                     else:
                         color = (255,0,0)
                         avoid = False
-                    drawBoundingBoxe(img,bb['x'],bb['y'],bb['x']+bb['width'],bb['y']+bb['height'],'%s (%.2f)'%(bb['label'], bb['value']),color)
+                    if boxes_en is True:
+                        drawBoundingBoxe(img,bb['x'],bb['y'],bb['x']+bb['width'],bb['y']+bb['height'],'%s (%.2f)'%(bb['label'], bb['value']),color)
                   
                 # Add the AoI to frame
                 layer = np.zeros(img.shape,dtype=np.uint8)
@@ -335,8 +336,8 @@ def main(argv):
                     if Plot_diagram is True:
                         v_y.append(v)
                         w_z.append(w)
-                if log_en is True:  
-                    print("avoid:({},{})".format(round(v,2),round(w,2)))
+                #if log_en is True:  
+                   # print("avoid:({},{})".format(round(v,2),round(w,2)))
                 else: # no obstacles. Straight forward
                     v = v_straight
                     w = 0
