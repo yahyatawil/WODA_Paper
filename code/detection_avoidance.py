@@ -3,6 +3,7 @@ import os
 import sys, getopt
 import signal
 import time
+
 import numpy as np
 from edge_impulse_linux.image import ImageImpulseRunner
 
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
-
+from datetime import datetime
 """
 Settings
 """
@@ -43,11 +44,17 @@ motor_en = True
 log_en = True
 
 boxes_en = True
+
+frame_save = True
+
+frame_save_dir = 'frames/'
+
 """
 Global variables
 """
 runner = None
-out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'MJPG') , fps=2.0, frameSize=(I_W, I_W))
+stamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+out = cv2.VideoWriter('output_{}.avi'.format(stamp), cv2.VideoWriter_fourcc(*'MJPG') , fps=2.0, frameSize=(I_W, I_W))
 prev_frame_time = 0
 new_frame_time = 0
 
@@ -180,9 +187,6 @@ def check_in_AoI(x,y,w,h):
     AoI_condition = cv2.pointPolygonTest(AoI, (point_x,point_y), False)
     return AoI_condition
 
-def now():
-    return round(time.time() * 1000)
-
 """
 Connect to Raspberry PI camera
 """
@@ -231,10 +235,11 @@ def main(argv):
 
     global prev_frame_time # used to calculate fps
     global new_frame_time # used to calculate fps
-    global sample
+    global sample, frame_save_dir
     fx=0
     fy=0
     avoid = False
+
     try:
         opts, args = getopt.getopt(argv, "h", ["--help"])
     except getopt.GetoptError:
@@ -361,6 +366,9 @@ def main(argv):
                 if save_video is True :
                     out.write(img)
 
+                if frame_save is True:
+                    DT = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+                    cv2.imwrite("{}{}.jpg".format(frame_save_dir,DT),img)
 
                 if (show_camera):
                     cv2.imshow('edgeimpulse', img)
