@@ -5,7 +5,7 @@
 
 ## Overview of the developed system
 
-Our system presented in the paper uses Mobilenetv2 SSD fine-tunned using a developed dataset built by us. The dataset is captured from Hasan Kalyoncu University campus sidewalks. The dataset and fine-tunning is done using EdgeImpulse and the overall code is Python-based. The object detection model passes the  obstacle position to a control law to calculate the required linear and angular speed to push the center of deteted bounding box to the sides of image. The controle law is image based. Our aim in this project is to build an object detection and avoidance system for smart wheelchair using Camera only. We used one Rasbperry Pi 4, Rasbperry Pi camera and Sabertooth for motor control.  
+Our system presented in the paper uses Mobilenetv2 SSD fine-tunned using a developed dataset built by us. The dataset is captured from Hasan Kalyoncu University campus sidewalks. The dataset and fine-tunning is done using EdgeImpulse and the overall code is Python-based. The object detection model passes the  obstacle position to a control law to calculate the required linear and angular speed to push the center of deteted bounding box to the sides of image. The controle law is image based. Our aim in this project is to build an object detection and avoidance system for smart wheelchair using Camera only. We used one Raspberry Pi 4, Raspberry Pi camera and Sabertooth for motor control.  
 
 <img src="https://user-images.githubusercontent.com/1148381/133652321-5524d03b-3849-4a80-b796-4c1c6b2d2c3e.png" width="500" height="700" class="center"/>
 
@@ -32,7 +32,7 @@ Our system presented in the paper uses Mobilenetv2 SSD fine-tunned using a devel
 
 Please fill this form to download our dataset WODD: [form link](https://docs.google.com/forms/d/1vZ1UEZ5PWfPGneoYeWwGmcVp_zfim9n1pFBp5WdtkEY/edit?usp=sharing).
 
-You can access our Edge Impulse project used to annotate and train the model pubicly from here: [Project](https://studio.edgeimpulse.com/studio/44851)
+You can access our Edge Impulse project used to annotate and train the model publicly from here: [Project](https://studio.edgeimpulse.com/studio/44851)
 
 ## Software Development Tools:
 
@@ -44,10 +44,10 @@ Edge Impulse: Annotation, training and versioning|Tensorflow: Dataset augmentati
 
 <img src="https://user-images.githubusercontent.com/1148381/133629164-24492c86-35db-476d-903f-a0462495209c.png " width="100" height="100" />|<img src="https://user-images.githubusercontent.com/1148381/133629301-6d1a78ae-73c5-4a6b-86df-cc04e70e6dad.png " width="100" height="100" />|<img src="https://user-images.githubusercontent.com/1148381/133631025-1e3ba446-77ff-406e-9bcc-85a82242fa94.png" width="100" height="100" />| <img src="https://user-images.githubusercontent.com/1148381/133631491-f083d6b4-dc94-4810-ad84-2fc678937b55.png " width="100" height="100" />|
 --|--|--|--
-Overleaf: Latex editing collaburativly|Draw IO: Digrams|kdenlive: Video Editing|PlantUML: UML diagrams
+Overleaf: Latex editing collaboratively|Draw IO: Digrams|kdenlive: Video Editing|PlantUML: UML diagrams
 
 ## Hints
-* Downloading OpenCV to Rasbperry Pi is a little bit tricky. [This guide](https://gist.github.com/willprice/abe456f5f74aa95d7e0bb81d5a710b60 ) seems the best one. Swap area may need to be increased if the installation stucks. 
-* If you intend to use another Hardware than Rasbperry Pi (.i.e. Jetson Nano), then you need to connect to Edge Impulse [project](https://studio.edgeimpulse.com/studio/44851) and build it again for your new Hardware. 
+* Downloading OpenCV to Raspberry Pi is a little bit tricky. [This guide](https://gist.github.com/willprice/abe456f5f74aa95d7e0bb81d5a710b60 )  seems the best one. Swap area may need to be increased if the installation stuck. 
+* If you intend to use another Hardware than Raspberry Pi (.i.e. Jetson Nano), then you need to connect to Edge Impulse [project](https://studio.edgeimpulse.com/studio/44851) and build it again for your new Hardware. 
 
 
