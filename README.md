@@ -9,10 +9,18 @@ Our system presented in the paper uses Mobilenetv2 SSD fine-tunned using a devel
 
 <img src="https://user-images.githubusercontent.com/1148381/133652321-5524d03b-3849-4a80-b796-4c1c6b2d2c3e.png" width="500" height="700" class="center"/>
 
-### Project members ###
+### Authors ###
 
 * Yahya Tawil
 * Abdul Hafez Abdul Hafez (supervisor).
+
+
+## Demo
+The demo video of our system is available in [Youtube](https://www.youtube.com/watch?v=tdyTbz0lcEM&feature=youtu.be).
+
+## ASYU 2022 Conferance Paper Presentation
+Available on [Youtube](https://youtu.be/NJ0L22ax3kI).
+
 
 ## This Repository Contents:
 
@@ -50,4 +58,5 @@ Overleaf: Latex editing collaboratively|Draw IO: Digrams|kdenlive: Video Editing
 * Downloading OpenCV to Raspberry Pi is a little bit tricky. [This guide](https://gist.github.com/willprice/abe456f5f74aa95d7e0bb81d5a710b60 )  seems the best one. Swap area may need to be increased if the installation stuck. 
 * If you intend to use another Hardware than Raspberry Pi (.i.e. Jetson Nano), then you need to connect to Edge Impulse [project](https://studio.edgeimpulse.com/studio/44851) and build it again for your new Hardware. 
 
+## Cite this
 
