@@ -1,7 +1,7 @@
 [![License CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
 ![Python 3.7](https://img.shields.io/badge/python-3.7-green.svg)
 
-# Towards Only-Vision Autonomous Wheelchair: A Deep Learning Obstacle Detection and Image-based Avoidance
+# Deep Learning Obstacle Detection and Avoidance for Powered Wheelchair
 
 ## Overview of the developed system
 
