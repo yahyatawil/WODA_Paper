@@ -16,7 +16,7 @@ Our system presented in the paper uses Mobilenetv2 SSD fine-tunned using a devel
 
 
 ## Demo
-The demo video of our system is available in [Youtube](https://www.youtube.com/watch?v=tdyTbz0lcEM&feature=youtu.be).
+The demo video of our system is available on [Youtube](https://www.youtube.com/watch?v=tdyTbz0lcEM&feature=youtu.be).
 
 ## ASYU 2022 Conferance Paper Presentation
 Available on [Youtube](https://youtu.be/NJ0L22ax3kI).
