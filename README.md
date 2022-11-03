@@ -60,3 +60,6 @@ Overleaf: Latex editing collaboratively|Draw IO: Digrams|kdenlive: Video Editing
 
 ## Cite this
 
+```
+Y. Tawil and A. H. A. Hafez, "Deep Learning Obstacle Detection and Avoidance for Powered Wheelchair," 2022 Innovations in Intelligent Systems and Applications Conference (ASYU), 2022, pp. 1-6, doi: 10.1109/ASYU56188.2022.9925493.
+```
